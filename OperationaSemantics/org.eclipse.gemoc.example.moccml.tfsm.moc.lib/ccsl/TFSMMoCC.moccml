@@ -1,0 +1,247 @@
+AutomataConstraintLibrary TFSMMoCC{ 
+	import "platform:/plugin/fr.inria.aoste.timesquare.ccslkernel.model/ccsllibrary/kernel.ccslLib" as kernel;
+	import "platform:/plugin/fr.inria.aoste.timesquare.ccslkernel.model/ccsllibrary/CCSL.ccslLib" as CCSLLib;
+	
+	RelationLibrary automataBasedTFSMRelations{
+
+		AutomataRelationDefinition EventGuardedTransitionDef[EventGuardedTransition]{
+
+			init:  EGT_initialState
+
+			from EGT_initialState to EGT_waitingEntry : EGT_init2waiting ->()
+
+			from EGT_waitingEntry to EGT_readyToFire : EGT_waitingEntryToreadyToFire
+			-> ( when EGT_stateEntry )
+
+			from EGT_readyToFire to EGT_waitingEntry : EGT_readyToFireTowaitingEntry
+			-> ( when EGT_reset)
+
+			from EGT_readyToFire to EGT_waitingEntry : EGT_readyToFireTowaitingEntry2
+			-> ( when EGT_trigger,EGT_fire)
+
+			from EGT_waitingEntry to EGT_waitingEntry :
+			EGT_waitingEntryToEGT_waitingEntry
+			-> ( when EGT_reset )
+
+			from EGT_waitingEntry to EGT_waitingEntry :
+			EGT_waitingEntryToEGT_waitingEntry2
+			-> ( when EGT_trigger )
+
+			State EGT_initialState ( out : EGT_init2waiting )
+
+			State EGT_waitingEntry ( in : EGT_init2waiting, EGT_readyToFireTowaitingEntry,
+			EGT_readyToFireTowaitingEntry2, EGT_waitingEntryToEGT_waitingEntry,
+			EGT_waitingEntryToEGT_waitingEntry2 out : EGT_waitingEntryToreadyToFire,
+			EGT_waitingEntryToEGT_waitingEntry, EGT_waitingEntryToEGT_waitingEntry2 )
+
+			State EGT_readyToFire ( in : EGT_waitingEntryToreadyToFire out :
+			EGT_readyToFireTowaitingEntry, EGT_readyToFireTowaitingEntry2 )
+		}
+
+		AutomataRelationDefinition TemporalGuardedTransitionDef[TemporalGuardedTransition]{
+
+			variables {
+			Integer currentCounter = 0	
+			}
+			
+			init:  initialState
+
+			from initialState to waitingStateEntry : TGT_init2waiting ->( do currentCounter = zero)
+
+			from waitingStateEntry to waitingTimerToElapse : TGT_waitingEntryToreadyToFire
+			-> ( when TGT_stateEntry do currentCounter = zero )
+
+			from waitingTimerToElapse to waitingStateEntry : TGT_readyToFireTowaitingEntry
+			-> ( when TGT_reset do currentCounter = zero)
+
+			from waitingTimerToElapse to waitingStateEntry : TGT_readyToFireTowaitingEntry2
+			-> ( when TGT_fire if (currentCounter == TGT_duration.value ) do currentCounter = zero )
+
+			from waitingStateEntry to waitingStateEntry :
+			TGT_waitingEntryToTGT_waitingEntry
+			-> ( when TGT_timeRef )
+
+			from waitingTimerToElapse to waitingTimerToElapse :
+			TGT_waitTimeToFireToTGT_waitTimeToFire
+			-> ( when TGT_timeRef if ( currentCounter < TGT_duration .value ) do currentCounter = ( currentCounter + one ) )
+
+			from waitingStateEntry to waitingStateEntry :
+			TGT_waitingEntryToTGT_waitingEntry2
+			-> ( when TGT_reset )
+
+			State initialState ( out : TGT_init2waiting )
+
+			State waitingStateEntry ( in : TGT_init2waiting, TGT_readyToFireTowaitingEntry,
+			TGT_readyToFireTowaitingEntry2, TGT_waitingEntryToTGT_waitingEntry,
+			TGT_waitingEntryToTGT_waitingEntry2 out : TGT_waitingEntryToreadyToFire, TGT_waitingEntryToTGT_waitingEntry, TGT_waitingEntryToTGT_waitingEntry2 )
+
+			State waitingTimerToElapse ( in : TGT_waitingEntryToreadyToFire,
+			TGT_waitTimeToFireToTGT_waitTimeToFire out :
+			TGT_readyToFireTowaitingEntry, TGT_readyToFireTowaitingEntry2,
+			TGT_waitTimeToFireToTGT_waitTimeToFire )
+		}
+
+		AutomataRelationDefinition MicroStepEnforcementDef [ MicroStepEnforcement ] {
+
+			init:  S7
+
+			from MSED_S3 to MSED_S4 : MSED_S3ToMSED_S4
+			-> ( when MSE_start, MSE_time )
+
+			from MSED_S3 to MSED_S4 : MSED_S3ToMSED_S42
+			-> ( when MSE_start )
+
+			from MSED_S3 to MSED_S3 : MSED_S3ToMSED_S3
+			-> ( when MSE_time)
+
+			from MSED_S4 to MSED_S3 : MSED_S4ToMSED_S3
+			-> ( when MSE_stop )
+
+			from S7 to MSED_S3 : S7ToMSED_S3
+			-> ( )
+
+			State S7 ( out : S7ToMSED_S3 )
+
+			State MSED_S3 ( in : MSED_S3ToMSED_S3, MSED_S4ToMSED_S3, S7ToMSED_S3 out : MSED_S3ToMSED_S4, MSED_S3ToMSED_S42, MSED_S3ToMSED_S3 )
+
+			State MSED_S4 ( in : MSED_S3ToMSED_S4, MSED_S3ToMSED_S42 out : MSED_S4ToMSED_S3 )
+		}
+
+		AutomataRelationDefinition NoTimeBetweenFireAndEnteringDef [
+		NoTimeBetweenFireAndEntering ] {
+
+			init:  S10
+
+			from S10 to NTBFAED_S2 : S10ToNTBFAED_S2
+			-> ( )
+
+			from NTBFAED_S2 to NTBFAED_S3 : NTBFAED_S2ToNTBFAED_S3
+			-> ( when NTBFE_eventOrTime, NTBFE_fire )
+
+			from NTBFAED_S3 to NTBFAED_S2 : NTBFAED_S3ToNTBFAED_S2
+			-> ( when NTBFE_entering )
+
+			from NTBFAED_S2 to NTBFAED_S2 : NTBFAED_S2ToNTBFAED_S2
+			-> ( when NTBFE_eventOrTime )
+
+			from NTBFAED_S2 to NTBFAED_S3 : NTBFAED_S2ToNTBFAED_S32
+			-> ( when NTBFE_fire )
+
+			State S10 ( out : S10ToNTBFAED_S2 )
+
+			State NTBFAED_S2 ( in : S10ToNTBFAED_S2, NTBFAED_S3ToNTBFAED_S2,
+			NTBFAED_S2ToNTBFAED_S2 out : NTBFAED_S2ToNTBFAED_S3, NTBFAED_S2ToNTBFAED_S2,
+			NTBFAED_S2ToNTBFAED_S32 )
+
+			State NTBFAED_S3 ( in : NTBFAED_S2ToNTBFAED_S3, NTBFAED_S2ToNTBFAED_S32 out : NTBFAED_S3ToNTBFAED_S2
+			)
+		}
+
+		AutomataRelationDefinition OneTickAndNoMoreFSMDef [ OneTickAndNoMoreFSM ] {
+
+			init:  S13
+
+			from S13 to OTANMFSMD_S2 : S13ToOTANMFSMD_S2
+			-> ( )
+
+			from OTANMFSMD_S2 to OTANMFSMD_S3 : OTANMFSMD_S2ToOTANMFSMD_S3
+			-> ( when OTANMFSM_clock )
+
+			State S13 ( out : S13ToOTANMFSMD_S2 )
+
+			State OTANMFSMD_S2 ( in : S13ToOTANMFSMD_S2 out : OTANMFSMD_S2ToOTANMFSMD_S3
+			)
+
+			State OTANMFSMD_S3 ( in : OTANMFSMD_S2ToOTANMFSMD_S3 )
+		}
+
+		AutomataRelationDefinition AlternatesFSMDef [ AlternatesFSM ] {
+
+			init:  S16
+
+			from S16 to AFSMD_S2 : S16ToAFSMD_S2
+			-> ( )
+
+			from AFSMD_S2 to AFSMD_S3 : AFSMD_S2ToAFSMD_S3
+			-> ( when AFSM_left )
+
+			from AFSMD_S3 to AFSMD_S2 : AFSMD_S3ToAFSMD_S2
+			-> ( when AFSM_right )
+
+			State S16 ( out : S16ToAFSMD_S2 )
+
+			State AFSMD_S2 ( in : S16ToAFSMD_S2, AFSMD_S3ToAFSMD_S2 out :
+			AFSMD_S2ToAFSMD_S3 )
+
+			State AFSMD_S3 ( in : AFSMD_S2ToAFSMD_S3 out : AFSMD_S3ToAFSMD_S2 )
+		}
+
+		AutomataRelationDefinition WeakAlternatesFSMDef [ WeakAlternatesFSM ] {
+
+			init:  S17
+
+			from WAFSMD_S2 to WAFSMD_S3 : WAFSMD_S2ToWAFSMD_S3
+			-> ( when WAFSM_left )
+
+			from WAFSMD_S3 to WAFSMD_S2 : WAFSMD_S3ToWAFSMD_S2
+			-> ( when WAFSM_right )
+
+			from S17 to WAFSMD_S2 : S17ToWAFSMD_S2
+			-> ( )
+
+			from WAFSMD_S2 to WAFSMD_S2 : WAFSMD_S2ToWAFSMD_S2
+			-> ( when WAFSM_left, WAFSM_right )
+
+			from WAFSMD_S3 to WAFSMD_S3 : WAFSMD_S3ToWAFSMD_S3
+			-> ( when WAFSM_left, WAFSM_right )
+
+			State S17 ( out : S17ToWAFSMD_S2 )
+
+			State WAFSMD_S2 ( in : WAFSMD_S3ToWAFSMD_S2, S17ToWAFSMD_S2,
+			WAFSMD_S2ToWAFSMD_S2 out : WAFSMD_S2ToWAFSMD_S3, WAFSMD_S2ToWAFSMD_S2 )
+
+			State WAFSMD_S3 ( in : WAFSMD_S2ToWAFSMD_S3, WAFSMD_S3ToWAFSMD_S3 out :
+			WAFSMD_S3ToWAFSMD_S2, WAFSMD_S3ToWAFSMD_S3 )
+		}
+
+		AutomataRelationDefinition GuardEvaluationWhenEventDef [
+		GuardEvaluationWhenEvent ] {
+
+			init:  S22
+
+			from S22 to GEWED_S2 : S22ToGEWED_S2
+			-> ( )
+
+			from GEWED_S2 to GEWED_S3 : GEWED_S2ToGEWED_S3
+			-> ( when GEWE_enter )
+
+			from GEWED_S3 to GEWED_S2 : GEWED_S3ToGEWED_S2
+			-> ( when GEWE_leave )
+
+			from GEWED_S3 to GEWED_S3 : GEWED_S3ToGEWED_S3
+			-> ( when GEWE_eval, GEWE_occuring )
+
+			from GEWED_S2 to GEWED_S2 : GEWED_S2ToGEWED_S2
+			-> ( when GEWE_occuring )
+
+			State S22 ( out : S22ToGEWED_S2 )
+
+			State GEWED_S2 ( in : S22ToGEWED_S2, GEWED_S3ToGEWED_S2, GEWED_S2ToGEWED_S2
+			out : GEWED_S2ToGEWED_S3, GEWED_S2ToGEWED_S2 )
+
+			State GEWED_S3 ( in : GEWED_S2ToGEWED_S3, GEWED_S3ToGEWED_S3 out :
+			GEWED_S3ToGEWED_S2, GEWED_S3ToGEWED_S3 )
+		}
+		RelationDeclaration EventGuardedTransition(EGT_stateEntry:clock, EGT_trigger:clock, EGT_reset:clock, EGT_fire:clock)
+		RelationDeclaration TemporalGuardedTransition(TGT_stateEntry:clock, TGT_timeRef:clock, TGT_reset:clock, TGT_duration:int, TGT_fire:clock)
+		/**
+		 * 		RelationDeclaration MicroStepEnforcement(MSE_start:clock, MSE_time:clock, MSE_stop:clock)
+		 */
+		RelationDeclaration MicroStepEnforcement(MSE_start:clock, MSE_time:clock, MSE_stop:clock)
+		RelationDeclaration NoTimeBetweenFireAndEntering(NTBFE_fire:clock,NTBFE_entering:clock,NTBFE_eventOrTime:clock)
+		RelationDeclaration GuardEvaluationWhenEvent(GEWE_enter:clock, GEWE_occuring:clock, GEWE_eval:clock, GEWE_leave:clock)
+		RelationDeclaration OneTickAndNoMoreFSM(OTANMFSM_clock:clock)
+		RelationDeclaration AlternatesFSM(AFSM_left:clock,AFSM_right:clock)
+		RelationDeclaration WeakAlternatesFSM(WAFSM_left:clock, WAFSM_right:clock)
+	}
+}
