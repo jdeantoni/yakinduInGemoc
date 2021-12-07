@@ -23,6 +23,8 @@ import com.yakindu.base.expressions.expressions.PrimitiveValueExpression
 import com.yakindu.base.expressions.expressions.IntLiteral
 import java.util.ArrayList
 import org.eclipse.gemoc.execution.concurrent.ccsljavaengine.extensions.k3.rtd.api.Containment
+import com.yakindu.sct.model.sgraph.State
+import com.yakindu.sct.model.stext.stext.EventDefinition
 
 //import org.eclipse.gemoc.execution.concurrent.ccsljavaengine.extensions.k3.rtd.api.Containment
 
@@ -46,7 +48,6 @@ class StatechartHelper{
 	}
 }
 
-
 @Aspect(className=Region)
 class RegionAspect extends NamedElementAspect {
 	@Containment(Containment.ContainmentStrategy.REFERENCE)
@@ -57,7 +58,7 @@ class RegionAspect extends NamedElementAspect {
 
 			_self.currentState = _self.vertices.findFirst[s | s instanceof Entry];
 		}
-		println("[" + _self.getClass().getSimpleName() + ":" + _self.getName() + ".Init()]Initialized " + _self.name);
+		println("  [" + _self.getClass().getSimpleName() + ":" + _self.getName() + ".Init()]Initialized " + _self.name);
 	}
 	
 	def void changeCurrentState(Vertex newState)
@@ -70,13 +71,22 @@ class RegionAspect extends NamedElementAspect {
 @Aspect(className=Vertex)
 class VertexAspect extends NamedElementAspect {
 	def String onEnter() {
-		_self.parentRegion.currentState = _self;
-		println("[" + _self.getClass().getSimpleName() + ":" + _self.getName() + ".onEnter()]Entering " + _self.name);
+		if (_self instanceof State){ //not for inital states
+			_self.parentRegion.currentState = _self;
+			println("  [" + _self.getClass().getSimpleName() + ":" + _self.getName() + ".onEnter()]Entering " + _self.name);
+		}
 		
 	}
 
-	def String onLeave() {
-		println("[" + _self.getClass().getSimpleName() + ":" + _self.getName() + ".onLeave()]Leaving " + _self.name);
+	def String onExit() {
+		if((_self instanceof State) && (_self as State).regions.size() > 0){
+			for (Region r : (_self as State).regions){
+				r.currentState = null
+			}
+		}
+		if (_self instanceof State){ //not for inital states
+			println("  [" + _self.getClass().getSimpleName() + ":" + _self.getName() + ".onLeave()]Leaving " + _self.name);
+		}
 	}
 }
 
@@ -84,7 +94,7 @@ class VertexAspect extends NamedElementAspect {
 class TransitionAspect extends NamedElementAspect {
 	def String fire() {
 		var ArrayList<Object> res = null
-		println("[" + _self.getClass().getSimpleName() + ":" + _self.source.name+"_to_"+_self.target.name + ".fire()]Fired")
+//		println("  [" + _self.getClass().getSimpleName() + ":" + _self.source.name+"_to_"+_self.target.name + ".fire()]Fired")
 		if(_self.specification!== null && _self.specification.split('/').size() > 1){		
 			//GroovyRunner.executeScript(_self.action, _self);
 			try {	
@@ -99,7 +109,7 @@ class TransitionAspect extends NamedElementAspect {
 					}
 					returnStatement = returnStatement + ']'
 				
-				println('eval: '+_self.specification.split('/').last.replaceAll(' *raise [^;]*(;)?',''))
+				println('    eval: '+_self.specification.split('/').last.replaceAll(' *raise [^;]*(;)?',''))
 				res = shell.evaluate(_self.specification.split('/').last.replaceAll(' *raise [^;]*(;)?','')+ returnStatement) as ArrayList<Object>
 				var i = 0
 
@@ -114,7 +124,7 @@ class TransitionAspect extends NamedElementAspect {
 			}	
 		}
 		_self.source.parentRegion.currentState = null
-		println("[" + _self.getClass().getSimpleName() + ":" + _self.source.name+"_to_"+_self.target.name + ".fire()]Fired  -> " + ((_self.specification !== null)?_self.specification.split('/').last:""))
+		println("  [" + _self.getClass().getSimpleName() + ":" + _self.source.name+"_to_"+_self.target.name + ".fire()]Fired  -> " + ((_self.specification !== null)?_self.specification.split('/').last:""))
 	}
 	
 
@@ -136,23 +146,11 @@ class TransitionAspect extends NamedElementAspect {
 @Aspect(className=NamedElement)
 class NamedElementAspect {
 }
-//
-//@Aspect(className=Guard)
-//abstract class GuardAspect extends NamedElementAspect {
-//}
-//
-//@Aspect(className=TemporalGuard)
-//class TemporalGuardAspect extends GuardAspect {
-//}
-//
-//@Aspect(className=EventGuard)
-//class EventGuardAspect extends GuardAspect {
-//}
 
 @Aspect(className=Event)
-class FSMEventAspect extends NamedElementAspect {
+class EventAspect extends NamedElementAspect {
 	def public String occurs() {
-		println("[" + _self.getClass().getSimpleName() + ":" + _self.getName() + ".occurs()]Occured " )
+		println("->[" + _self.getClass().getSimpleName() + ":" + _self.getName() + ".occurs()]Occured " )
 	}
 }
 
@@ -165,9 +163,8 @@ class StatechartAspect extends NamedElementAspect {
 	// Clock tick
 	def public String ticks() {
 		_self.numberOfTicks = _self.numberOfTicks + 1
-		
-		println("[" + _self.getClass().getSimpleName() + ":" + _self.getName() + ".ticks()]New number of ticks : " +
-			_self.numberOfTicks.toString())
+		println("@" +// _self.getClass().getSimpleName() + ":" + _self.getName() + ".ticks()]New number of ticks : " +
+		_self.numberOfTicks.toString())
 	}
 	
 	@InitializeModel
@@ -204,7 +201,7 @@ class StatechartAspect extends NamedElementAspect {
 
 @Aspect(className=Property)
 class PropertyAspect {
-	@Containment(Containment.ContainmentStrategy.CONTAINER)
+	//@Containment(Containment.ContainmentStrategy.CONTAINER)
 	public Integer currentValue = 0
 	
 	def void init() {

@@ -75,41 +75,6 @@ public class OncurrentTFSMModelStateHelper implements IK3ModelStateHelper{
 				EObject elem = allContentIt.next();
 
 				Class<?> clazz =null;
-				clazz = K3DslHelper.getTarget(org.eclipse.gemoc.example.moccml.tfsm.k3dsa.aspect.StatechartAspect.class);
-				if (clazz.isInstance(elem)) {
-					ElementState elemState = theFactory.createElementState();
-					elemState.setModelElement(elem);
-					res.getOwnedElementstates().add(elemState);
-					Object propertyValue = null;
-					if (allRTDs) {  //property not in state space:numberOfTicks
-					// Annotation CONTAINER
-						propertyValue = OncurrentTFSMRTDAccessor.saveProperty_numberOfTicks((com.yakindu.sct.model.sgraph.Statechart)elem);
-						AttributeNameToValue n2v0 = new AttributeNameToValue("numberOfTicks", propertyValue);
-						elemState.getSavedRTDs().add(n2v0);
-					}
-				}
-				clazz = K3DslHelper.getTarget(org.eclipse.gemoc.example.moccml.tfsm.k3dsa.aspect.RegionAspect.class);
-				if (clazz.isInstance(elem)) {
-					ElementState elemState = theFactory.createElementState();
-					elemState.setModelElement(elem);
-					res.getOwnedElementstates().add(elemState);
-					Object propertyValue = null;
-					// Annotation REFERENCE
-					propertyValue = OncurrentTFSMRTDAccessor.saveProperty_currentState((com.yakindu.sct.model.sgraph.Region)elem);
-					AttributeNameToValue n2v0 = new AttributeNameToValue("currentState", propertyValue);
-					elemState.getSavedRTDs().add(n2v0);
-				}
-				clazz = K3DslHelper.getTarget(org.eclipse.gemoc.example.moccml.tfsm.k3dsa.aspect.PropertyAspect.class);
-				if (clazz.isInstance(elem)) {
-					ElementState elemState = theFactory.createElementState();
-					elemState.setModelElement(elem);
-					res.getOwnedElementstates().add(elemState);
-					Object propertyValue = null;
-					// Annotation CONTAINER
-					propertyValue = OncurrentTFSMRTDAccessor.saveProperty_currentValue((com.yakindu.base.types.Property)elem);
-					AttributeNameToValue n2v0 = new AttributeNameToValue("currentValue", propertyValue);
-					elemState.getSavedRTDs().add(n2v0);
-				}
 			}
 		}
 		return res;

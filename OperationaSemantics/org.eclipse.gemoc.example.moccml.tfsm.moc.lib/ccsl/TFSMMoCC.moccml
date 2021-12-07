@@ -232,8 +232,108 @@ AutomataConstraintLibrary TFSMMoCC{
 			State GEWED_S3 ( in : GEWED_S2ToGEWED_S3, GEWED_S3ToGEWED_S3 out :
 			GEWED_S3ToGEWED_S2, GEWED_S3ToGEWED_S3 )
 		}
+
+		AutomataRelationDefinition InternalStateEnteringDef [ InternalStateLeaving ]
+		{
+
+			init:  S25
+
+			from S25 to ISED_S2 : S25ToISED_S2
+			-> ( )
+
+			from ISED_S2 to ISED_S3 : ISED_S2ToISED_S3
+			-> ( when ISL_enter )
+
+			from ISED_S3 to ISED_S2 : ISED_S3ToISED_S2
+			-> ( when ISL_allFire, ISL_leave )
+
+			from ISED_S2 to ISED_S2 : ISED_S2ToISED_S2
+			-> ( when ISL_superStateLeaving )
+
+			from ISED_S3 to ISED_S2 : ISED_S3ToISED_S22
+			-> ( when ISL_superStateLeaving, ISL_leave )
+
+			State S25 ( out : S25ToISED_S2 )
+
+			State ISED_S2 ( in : S25ToISED_S2, ISED_S3ToISED_S2, ISED_S2ToISED_S2,
+			ISED_S3ToISED_S22 out : ISED_S2ToISED_S3, ISED_S2ToISED_S2 )
+
+			State ISED_S3 ( in : ISED_S2ToISED_S3 out : ISED_S3ToISED_S2,
+			ISED_S3ToISED_S22 )
+		} 
+		
+		AutomataRelationDefinition StateEveryClauseDef [ StateEveryClause ] {
+			variables {
+				Integer numberOfTicks = 0	
+			}
+
+			init:  S28
+
+			from S28 to SECD_S2 : S28ToSECD_S2
+			-> ( do numberOfTicks = zero )
+
+			from SECD_S2 to SECD_S3 : SECD_S2ToSECD_S3
+			-> ( when SEC_stateEntry )
+
+			from SECD_S3 to SECD_S2 : SECD_S3ToSECD_S2
+			-> ( when SEC_stateLeave do numberOfTicks = zero )
+
+			from SECD_S3 to SECD_S2 : SECD_S3ToSECD_S22
+			-> ( when SEC_stateLeave, SEC_timeRef do numberOfTicks = zero )
+
+			from SECD_S2 to SECD_S2 : SECD_S2ToSECD_S2
+			-> ( when SEC_eventOccurs )
+
+			from SECD_S2 to SECD_S2 : SECD_S2ToSECD_S22
+			-> ( when SEC_timeRef )
+
+			from SECD_S2 to SECD_S2 : SECD_S2ToSECD_S23
+			-> ( when SEC_eventOccurs, SEC_timeRef )
+
+			from SECD_S3 to SECD_S3 : SECD_S3ToSECD_S3
+			-> ( when SEC_eventOccurs, SEC_timeRef if ( numberOfTicks == SEC_duration
+			.value ) do numberOfTicks = zero )
+
+			from SECD_S3 to SECD_S3 : SECD_S3ToSECD_S32
+			-> ( when SEC_timeRef if ( numberOfTicks < SEC_duration .value ) do
+			numberOfTicks = ( numberOfTicks + one ) )
+
+			State S28 ( out : S28ToSECD_S2 )
+
+			State SECD_S2 ( in : S28ToSECD_S2, SECD_S3ToSECD_S2, SECD_S3ToSECD_S22,
+			SECD_S2ToSECD_S2, SECD_S2ToSECD_S22, SECD_S2ToSECD_S22 out : SECD_S2ToSECD_S3, SECD_S2ToSECD_S2, SECD_S2ToSECD_S22, SECD_S2ToSECD_S22 )
+
+			State SECD_S3 ( in : SECD_S2ToSECD_S3, SECD_S3ToSECD_S3, SECD_S3ToSECD_S32
+			out : SECD_S3ToSECD_S2, SECD_S3ToSECD_S22, SECD_S3ToSECD_S3,
+			SECD_S3ToSECD_S32 )
+		}
+
+		AutomataRelationDefinition AllowedInBetweenDef [ AllowedInBetween ] {
+
+			init:  S31
+
+			from S31 to AIBD_S2 : S31ToAIBD_S2
+			-> ( )
+
+			from AIBD_S2 to AIBD_S3 : AIBD_S2ToAIBD_S3
+			-> ( when AIB_start )
+
+			from AIBD_S3 to AIBD_S2 : AIBD_S3ToAIBD_S2
+			-> ( when AIB_stop )
+
+			from AIBD_S3 to AIBD_S3 : AIBD_S3ToAIBD_S3
+			-> ( when AIB_event )
+
+			State S31 ( out : S31ToAIBD_S2 )
+
+			State AIBD_S2 ( in : S31ToAIBD_S2, AIBD_S3ToAIBD_S2 out : AIBD_S2ToAIBD_S3 )
+
+			State AIBD_S3 ( in : AIBD_S2ToAIBD_S3, AIBD_S3ToAIBD_S3 out :
+			AIBD_S3ToAIBD_S2, AIBD_S3ToAIBD_S3 )
+		}
 		RelationDeclaration EventGuardedTransition(EGT_stateEntry:clock, EGT_trigger:clock, EGT_reset:clock, EGT_fire:clock)
 		RelationDeclaration TemporalGuardedTransition(TGT_stateEntry:clock, TGT_timeRef:clock, TGT_reset:clock, TGT_duration:int, TGT_fire:clock)
+		RelationDeclaration StateEveryClause(SEC_stateEntry:clock, SEC_timeRef:clock, SEC_stateLeave:clock, SEC_duration:int, SEC_eventOccurs:clock) 
 		/**
 		 * 		RelationDeclaration MicroStepEnforcement(MSE_start:clock, MSE_time:clock, MSE_stop:clock)
 		 */
@@ -243,5 +343,7 @@ AutomataConstraintLibrary TFSMMoCC{
 		RelationDeclaration OneTickAndNoMoreFSM(OTANMFSM_clock:clock)
 		RelationDeclaration AlternatesFSM(AFSM_left:clock,AFSM_right:clock)
 		RelationDeclaration WeakAlternatesFSM(WAFSM_left:clock, WAFSM_right:clock)
+		RelationDeclaration InternalStateLeaving(ISL_enter:clock, ISL_leave:clock, ISL_allFire:clock, ISL_superStateLeaving:clock)
+		RelationDeclaration AllowedInBetween(AIB_start:clock, AIB_event:clock, AIB_stop:clock)
 	}
 }

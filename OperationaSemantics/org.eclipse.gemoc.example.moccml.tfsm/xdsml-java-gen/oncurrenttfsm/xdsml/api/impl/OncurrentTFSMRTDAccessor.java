@@ -10,57 +10,6 @@ import org.eclipse.gemoc.executionframework.engine.commons.K3DslHelper;
 
 
 public class OncurrentTFSMRTDAccessor {
-  public static java.lang.Integer getnumberOfTicks(com.yakindu.sct.model.sgraph.Statechart eObject) {
-     java.lang.Integer theProperty = (java.lang.Integer)getAspectProperty(eObject, "ConcurrentTFSM", "org.eclipse.gemoc.example.moccml.tfsm.k3dsa.aspect.StatechartAspect", "numberOfTicks");
-		return theProperty;
-}
-  public static java.lang.Integer saveProperty_numberOfTicks(com.yakindu.sct.model.sgraph.Statechart eObject) {
-		java.lang.Integer propertyValue = (java.lang.Integer)getAspectProperty(eObject, "ConcurrentTFSM", "org.eclipse.gemoc.example.moccml.tfsm.k3dsa.aspect.StatechartAspect", "numberOfTicks");
-		propertyValue = propertyValue == null ? null : (java.lang.Integer)Copier.clone(propertyValue);
-		return propertyValue;
-}
-	public static boolean setnumberOfTicks(com.yakindu.sct.model.sgraph.Statechart eObject, java.lang.Integer newValue) {
-		return setAspectProperty(eObject, "ConcurrentTFSM", "org.eclipse.gemoc.example.moccml.tfsm.k3dsa.aspect.StatechartAspect", "numberOfTicks", newValue);
-	}
-	public static boolean restoreProperty_numberOfTicks(com.yakindu.sct.model.sgraph.Statechart eObject, java.lang.Integer newValue) {
-		java.lang.Integer propertyValue = newValue;
-		propertyValue = propertyValue == null ? null : (java.lang.Integer)Copier.clone(propertyValue);
-		return setAspectProperty(eObject, "ConcurrentTFSM", "org.eclipse.gemoc.example.moccml.tfsm.k3dsa.aspect.StatechartAspect", "numberOfTicks", propertyValue);
-	}
-  public static com.yakindu.sct.model.sgraph.Vertex getcurrentState(com.yakindu.sct.model.sgraph.Region eObject) {
-     com.yakindu.sct.model.sgraph.Vertex theProperty = (com.yakindu.sct.model.sgraph.Vertex)getAspectProperty(eObject, "ConcurrentTFSM", "org.eclipse.gemoc.example.moccml.tfsm.k3dsa.aspect.RegionAspect", "currentState");
-		return theProperty;
-}
-  public static com.yakindu.sct.model.sgraph.Vertex saveProperty_currentState(com.yakindu.sct.model.sgraph.Region eObject) {
-		com.yakindu.sct.model.sgraph.Vertex propertyValue = (com.yakindu.sct.model.sgraph.Vertex)getAspectProperty(eObject, "ConcurrentTFSM", "org.eclipse.gemoc.example.moccml.tfsm.k3dsa.aspect.RegionAspect", "currentState");
-		// Reference property
-		return propertyValue;
-}
-	public static boolean setcurrentState(com.yakindu.sct.model.sgraph.Region eObject, com.yakindu.sct.model.sgraph.Vertex newValue) {
-		return setAspectProperty(eObject, "ConcurrentTFSM", "org.eclipse.gemoc.example.moccml.tfsm.k3dsa.aspect.RegionAspect", "currentState", newValue);
-	}
-	public static boolean restoreProperty_currentState(com.yakindu.sct.model.sgraph.Region eObject, com.yakindu.sct.model.sgraph.Vertex newValue) {
-		com.yakindu.sct.model.sgraph.Vertex propertyValue = newValue;
-		// Reference property
-		return setAspectProperty(eObject, "ConcurrentTFSM", "org.eclipse.gemoc.example.moccml.tfsm.k3dsa.aspect.RegionAspect", "currentState", propertyValue);
-	}
-  public static java.lang.Integer getcurrentValue(com.yakindu.base.types.Property eObject) {
-     java.lang.Integer theProperty = (java.lang.Integer)getAspectProperty(eObject, "ConcurrentTFSM", "org.eclipse.gemoc.example.moccml.tfsm.k3dsa.aspect.PropertyAspect", "currentValue");
-		return theProperty;
-}
-  public static java.lang.Integer saveProperty_currentValue(com.yakindu.base.types.Property eObject) {
-		java.lang.Integer propertyValue = (java.lang.Integer)getAspectProperty(eObject, "ConcurrentTFSM", "org.eclipse.gemoc.example.moccml.tfsm.k3dsa.aspect.PropertyAspect", "currentValue");
-		propertyValue = propertyValue == null ? null : (java.lang.Integer)Copier.clone(propertyValue);
-		return propertyValue;
-}
-	public static boolean setcurrentValue(com.yakindu.base.types.Property eObject, java.lang.Integer newValue) {
-		return setAspectProperty(eObject, "ConcurrentTFSM", "org.eclipse.gemoc.example.moccml.tfsm.k3dsa.aspect.PropertyAspect", "currentValue", newValue);
-	}
-	public static boolean restoreProperty_currentValue(com.yakindu.base.types.Property eObject, java.lang.Integer newValue) {
-		java.lang.Integer propertyValue = newValue;
-		propertyValue = propertyValue == null ? null : (java.lang.Integer)Copier.clone(propertyValue);
-		return setAspectProperty(eObject, "ConcurrentTFSM", "org.eclipse.gemoc.example.moccml.tfsm.k3dsa.aspect.PropertyAspect", "currentValue", propertyValue);
-	}
 
 	public static Object getAspectProperty(EObject eObject, String languageName, String aspectName, String propertyName) {
 		List<Class<?>> aspects = K3DslHelper.getAspectsOn(languageName, eObject.getClass());
